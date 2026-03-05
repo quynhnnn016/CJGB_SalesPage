@@ -1,5 +1,5 @@
 // Thay URL bằng Webhook Production sau khi thiết lập n8n
-const N8N_WEBHOOK_URL = 'https://quynhnnn23410.app.n8n.cloud/webhook-test/get-products';
+const N8N_WEBHOOK_URL = 'https://thaovan176.app.n8n.cloud/webhook-test/get-products';
 
 // Biến lưu trữ toàn bộ sản phẩm gốc để thực hiện Lọc
 let allProducts = [];
