@@ -1,0 +1,504 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Thanh toán đơn hàng | CJGB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800&family=Open+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap"
+    rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <style>
+    :root {
+      --cjgb-primary: #f7be04;
+      --cjgb-primary-strong: #f59f00;
+      --cjgb-ink: #111111;
+      --cjgb-muted: #6f7683;
+      --cjgb-surface: #ffffff;
+      --cjgb-border: #eadcb8;
+      --cjgb-shadow: 0 14px 34px rgba(17, 24, 39, 0.1);
+      --cjgb-danger: #e03131;
+    }
+
+    body {
+      font-family: "Open Sans", sans-serif;
+      color: var(--cjgb-ink);
+      background:
+        radial-gradient(circle at 8% 10%, rgba(247, 190, 4, 0.22), rgba(247, 190, 4, 0) 36%),
+        radial-gradient(circle at 92% 2%, rgba(245, 159, 0, 0.16), rgba(245, 159, 0, 0) 30%),
+        linear-gradient(180deg, #fff8eb 0%, #ffffff 50%, #f6f7fb 100%);
+      min-height: 100vh;
+    }
+
+    .checkout-page {
+      max-width: 1240px;
+      margin: 0 auto;
+      padding: 26px 16px 64px;
+    }
+
+    .checkout-hero {
+      border: 1px solid var(--cjgb-border);
+      background:
+        linear-gradient(118deg, rgba(247, 190, 4, 0.12), rgba(247, 190, 4, 0) 46%),
+        #ffffff;
+      border-radius: 20px;
+      box-shadow: var(--cjgb-shadow);
+      padding: 20px 22px;
+      margin-bottom: 20px;
+    }
+
+    .checkout-eyebrow {
+      display: inline-flex;
+      align-items: center;
+      gap: 8px;
+      font-size: 0.78rem;
+      text-transform: uppercase;
+      letter-spacing: 0.07em;
+      font-weight: 800;
+      color: #7f5500;
+      background: #fff3cd;
+      border: 1px solid #f4d184;
+      border-radius: 999px;
+      padding: 5px 12px;
+      margin-bottom: 10px;
+    }
+
+    .checkout-eyebrow::before {
+      content: "";
+      width: 8px;
+      height: 8px;
+      border-radius: 50%;
+      background: var(--cjgb-primary-strong);
+      box-shadow: 0 0 0 4px rgba(245, 159, 0, 0.2);
+    }
+
+    .checkout-title {
+      font-family: "Nunito", sans-serif;
+      font-size: clamp(1.45rem, 3vw, 2.35rem);
+      font-weight: 800;
+      margin-bottom: 6px;
+    }
+
+    .checkout-subtitle {
+      color: #5e6470;
+      margin-bottom: 0;
+    }
+
+    .checkout-card {
+      border: 1px solid var(--cjgb-border);
+      border-radius: 18px;
+      background: var(--cjgb-surface);
+      box-shadow: var(--cjgb-shadow);
+    }
+
+    .checkout-section-title {
+      font-family: "Nunito", sans-serif;
+      font-weight: 800;
+      font-size: 1.6rem;
+      margin-bottom: 14px;
+    }
+
+    .form-label {
+      color: #000000;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .req {
+      color: var(--cjgb-danger);
+      font-weight: 800;
+      margin-left: 2px;
+    }
+
+    .form-control {
+      border: 1px solid #e6d7b4;
+      min-height: 48px;
+      border-radius: 14px;
+      background: #fffefb;
+      color: #111111;
+    }
+
+    textarea.form-control {
+      min-height: 120px;
+      padding-top: 12px;
+    }
+
+    .form-control:focus {
+      border-color: #efb21a;
+      box-shadow: 0 0 0 4px rgba(239, 178, 26, 0.2);
+      background: #ffffff;
+    }
+
+    .form-control::placeholder {
+      color: #9aa2af;
+      font-size: 0.88rem;
+      font-weight: 500;
+    }
+
+    #order_number {
+      font-weight: 700;
+      color: #8a5a00;
+      background: #fff9ea;
+    }
+
+    .btn-cjgb-primary,
+    .btn-cjgb-outline {
+      border-radius: 14px;
+      min-height: 52px;
+      font-weight: 800;
+      font-family: "Nunito", sans-serif;
+      letter-spacing: 0.01em;
+      transition: all 200ms ease;
+    }
+
+    .btn-cjgb-primary {
+      border: none;
+      color: #111111;
+      background: linear-gradient(120deg, #f9cf62 0%, #f7be04 46%, #f5a202 100%);
+      box-shadow: 0 10px 24px rgba(247, 190, 4, 0.36);
+      padding-inline: 24px;
+    }
+
+    .btn-cjgb-primary:hover {
+      transform: translateY(-1px);
+      box-shadow: 0 14px 30px rgba(247, 190, 4, 0.4);
+      color: #111111;
+    }
+
+    .btn-cjgb-outline {
+      border: 1px solid #c6ccd8;
+      color: #2c3441;
+      background: rgba(255, 255, 255, 0.8);
+      padding-inline: 22px;
+    }
+
+    .btn-cjgb-outline:hover {
+      color: #151b26;
+      border-color: #9ca6b8;
+      background: #ffffff;
+      box-shadow: 0 8px 20px rgba(30, 41, 59, 0.08);
+    }
+
+    .summary-box {
+      background:
+        linear-gradient(145deg, #ffffff 0%, #fffaf0 100%);
+    }
+
+    .summary-chip {
+      display: inline-flex;
+      align-items: center;
+      border: 1px solid #f4d38b;
+      background: #fff4dc;
+      border-radius: 999px;
+      padding: 6px 12px;
+      font-size: 0.8rem;
+      font-weight: 800;
+      color: #7d5100;
+    }
+
+    .checkout-item-card {
+      border: 1px solid #efe0bc;
+      border-radius: 14px;
+      background: #fffef9;
+      transition: transform 200ms ease, box-shadow 200ms ease;
+    }
+
+    .checkout-item-card:hover {
+      transform: translateY(-2px);
+      box-shadow: 0 12px 24px rgba(17, 24, 39, 0.08);
+    }
+
+    .checkout-item-thumb {
+      width: 58px;
+      height: 58px;
+      object-fit: contain;
+      border: 1px solid #f1dfb4;
+      border-radius: 12px;
+      background: #fff;
+    }
+
+    .checkout-product-name {
+      font-family: "Nunito", sans-serif;
+      font-weight: 800;
+      color: #1f2937;
+      font-size: 1.06rem;
+    }
+
+    .checkout-total-box {
+      border: 1px solid #f2cf84;
+      border-radius: 14px;
+      background: linear-gradient(140deg, #fff3d2 0%, #fff8eb 90%);
+      padding: 14px 16px;
+    }
+
+    .checkout-total-label {
+      color: #7b5100;
+      font-weight: 800;
+      font-family: "Nunito", sans-serif;
+    }
+
+    .checkout-total-value {
+      font-family: "Nunito", sans-serif;
+      font-weight: 800;
+      color: #111827;
+    }
+
+    .cjgb-select {
+      position: relative;
+    }
+
+    .cjgb-select-trigger {
+      width: 100%;
+      min-height: 50px;
+      border: 1px solid #e6d7b4;
+      border-radius: 14px;
+      background: #fffefb;
+      color: #111111;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 10px 14px;
+      font-weight: 600;
+      transition: all 180ms ease;
+    }
+
+    .cjgb-select-trigger:hover {
+      border-color: #e8ba49;
+      background: #fffdf8;
+    }
+
+    .cjgb-select.is-open .cjgb-select-trigger {
+      border-color: #efb21a;
+      box-shadow: 0 0 0 4px rgba(239, 178, 26, 0.2);
+      background: #fff;
+    }
+
+    .cjgb-chevron {
+      width: 22px;
+      height: 22px;
+      border-radius: 50%;
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      color: #556070;
+      transition: transform 180ms ease;
+      flex-shrink: 0;
+    }
+
+    .cjgb-select.is-open .cjgb-chevron {
+      transform: rotate(180deg);
+    }
+
+    .cjgb-select-menu {
+      position: absolute;
+      z-index: 22;
+      top: calc(100% + 8px);
+      left: 0;
+      right: 0;
+      border: 1px solid #ecd5a4;
+      border-radius: 14px;
+      background: #fffdf8;
+      box-shadow: 0 14px 34px rgba(17, 24, 39, 0.16);
+      padding: 8px;
+      opacity: 0;
+      visibility: hidden;
+      transform: translateY(-4px);
+      transition: all 170ms ease;
+    }
+
+    .cjgb-select.is-open .cjgb-select-menu {
+      opacity: 1;
+      visibility: visible;
+      transform: translateY(0);
+    }
+
+    .cjgb-option {
+      width: 100%;
+      border: none;
+      border-radius: 10px;
+      background: transparent;
+      text-align: left;
+      padding: 10px 12px;
+      font-weight: 600;
+      color: #2f3746;
+      transition: all 140ms ease;
+    }
+
+    .cjgb-option:hover {
+      background: #fff0cb;
+      color: #704800;
+    }
+
+    .cjgb-option.is-selected {
+      background: linear-gradient(110deg, #ffe6aa 0%, #ffeecb 100%);
+      color: #704800;
+    }
+
+    @media (max-width: 992px) {
+      .checkout-page {
+        padding-top: 16px;
+      }
+
+      .checkout-hero {
+        padding: 18px 16px;
+      }
+
+      .sticky-top {
+        position: static !important;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <main class="checkout-page">
+    <section class="checkout-hero d-flex justify-content-between align-items-center flex-wrap gap-3">
+      <div>
+        <span class="checkout-eyebrow">Secure checkout</span>
+        <h1 class="checkout-title">Thanh toán đơn hàng</h1>
+        <p class="checkout-subtitle">Hoàn tất thông tin cho đơn hàng của bạn.</p>
+      </div>
+      <a class="btn btn-cjgb-outline btn-lg" href="index.html">Quay lại giỏ hàng</a>
+    </section>
+
+    <div id="checkout-message"></div>
+
+    <div class="row g-4">
+      <div class="col-12 col-lg-7">
+        <div class="checkout-card p-4">
+          <h2 class="checkout-section-title">Thông tin người nhận</h2>
+          <form id="checkout-form" novalidate>
+            <input type="hidden" id="profile_id" name="profile_id">
+
+            <div class="row g-3">
+              <div class="col-12 col-md-6">
+                <label class="form-label" for="customer_name">Họ và tên <span class="req">*</span></label>
+                <input id="customer_name" name="customer_name" class="form-control" placeholder="Nguyễn Văn A" required>
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label" for="customer_phone">Số điện thoại <span class="req">*</span></label>
+                <input id="customer_phone" name="customer_phone" class="form-control" placeholder="09xxxxxxxx" required>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="customer_email">Email</label>
+                <input id="customer_email" name="customer_email" type="email" class="form-control"
+                  placeholder="name@email.com">
+              </div>
+              <div class="col-12 col-md-4">
+                <label class="form-label" for="receiver_province">Tỉnh/Thành phố <span class="req">*</span></label>
+                <input id="receiver_province" name="receiver_province" class="form-control" placeholder="Hồ Chí Minh"
+                  required>
+              </div>
+              <div class="col-12 col-md-4">
+                <label class="form-label" for="receiver_district">Quận/Huyện <span class="req">*</span></label>
+                <input id="receiver_district" name="receiver_district" class="form-control" placeholder="Quận 1"
+                  required>
+              </div>
+              <div class="col-12 col-md-4">
+                <label class="form-label" for="receiver_ward">Phường/Xã <span class="req">*</span></label>
+                <input id="receiver_ward" name="receiver_ward" class="form-control" placeholder="Phường Bến Nghé"
+                  required>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="receiver_address">Địa chỉ chi tiết <span class="req">*</span></label>
+                <input id="receiver_address" name="receiver_address" class="form-control"
+                  placeholder="Số nhà, tên đường, tòa nhà..." required>
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label">Phương thức thanh toán <span class="req">*</span></label>
+                <div class="cjgb-select" data-input-id="payment_method">
+                  <button class="cjgb-select-trigger" type="button" data-select-trigger aria-expanded="false">
+                    <span data-select-label>Thanh toán khi nhận hàng (COD)</span>
+                    <span class="cjgb-chevron">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="m12 15.5l-7-7l1.4-1.4l5.6 5.6l5.6-5.6L19 8.5z" />
+                      </svg>
+                    </span>
+                  </button>
+                  <div class="cjgb-select-menu" role="listbox">
+                    <button class="cjgb-option is-selected" type="button" data-value="cod">Thanh toán khi nhận hàng
+                      (COD)</button>
+                    <button class="cjgb-option" type="button" data-value="bank_transfer">Chuyển khoản ngân hàng</button>
+                  </div>
+                </div>
+                <input id="payment_method" name="payment_method" type="hidden" value="cod">
+              </div>
+              <div class="col-12 col-md-6">
+                <label class="form-label">Phương thức giao hàng <span class="req">*</span></label>
+                <div class="cjgb-select" data-input-id="delivery_method">
+                  <button class="cjgb-select-trigger" type="button" data-select-trigger aria-expanded="false">
+                    <span data-select-label>Giao tiêu chuẩn</span>
+                    <span class="cjgb-chevron">
+                      <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" viewBox="0 0 24 24">
+                        <path fill="currentColor" d="m12 15.5l-7-7l1.4-1.4l5.6 5.6l5.6-5.6L19 8.5z" />
+                      </svg>
+                    </span>
+                  </button>
+                  <div class="cjgb-select-menu" role="listbox">
+                    <button class="cjgb-option is-selected" type="button" data-value="standard">Giao tiêu chuẩn</button>
+                    <button class="cjgb-option" type="button" data-value="express">Giao nhanh</button>
+                  </div>
+                </div>
+                <input id="delivery_method" name="delivery_method" type="hidden" value="standard">
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="customer_note">Ghi chú đơn hàng</label>
+                <textarea id="customer_note" name="customer_note" class="form-control"
+                  placeholder="Ví dụ: Giao giờ hành chính..."></textarea>
+              </div>
+              <div class="col-12">
+                <label class="form-label" for="order_number">Mã đơn hàng</label>
+                <input id="order_number" name="order_number" class="form-control" readonly>
+              </div>
+            </div>
+
+            <div class="mt-4 d-flex gap-2 flex-wrap">
+              <button id="submit-order-btn" type="submit" class="btn btn-cjgb-primary btn-lg">Đặt hàng ngay</button>
+              <a class="btn btn-cjgb-outline btn-lg" href="index.html">Tiếp tục mua hàng</a>
+            </div>
+          </form>
+        </div>
+      </div>
+
+      <div class="col-12 col-lg-5">
+        <div class="checkout-card summary-box p-4 sticky-top" style="top: 16px;">
+          <div class="d-flex justify-content-between align-items-center mb-3">
+            <h2 class="checkout-section-title mb-0" style="font-size: 1.8rem;">Đơn hàng của bạn</h2>
+            <span class="summary-chip" id="checkout-order-number-preview">#---</span>
+          </div>
+          <ul id="checkout-item-list" class="list-group mb-3"></ul>
+          <div class="d-flex justify-content-between mb-2">
+            <span>Tạm tính</span>
+            <strong id="checkout-subtotal">0 ₫</strong>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span>Phí ship</span>
+            <strong id="checkout-shipping">0 ₫</strong>
+          </div>
+          <div class="d-flex justify-content-between mb-2">
+            <span>Giảm giá</span>
+            <strong id="checkout-discount">0 ₫</strong>
+          </div>
+          <hr>
+          <div class="checkout-total-box d-flex justify-content-between fs-5">
+            <span class="checkout-total-label">Tổng thanh toán</span>
+            <strong class="checkout-total-value" id="checkout-total">0 ₫</strong>
+          </div>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/js/bootstrap.bundle.min.js"
+    integrity="sha384-ENjdO4Dr2bkBIFxQpeoTz1HIcje39Wm4jDKdf19U8gI4ddQ3GYNS7NTKfAdVQSZe"
+    crossorigin="anonymous"></script>
+  <script src="js/checkout.js"></script>
+</body>
+
+</html>

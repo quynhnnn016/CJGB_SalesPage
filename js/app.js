@@ -1,5 +1,7 @@
 // Thay URL bằng Webhook Production sau khi thiết lập n8n
 const N8N_WEBHOOK_URL = 'https://thaovan176.app.n8n.cloud/webhook-test/get-products';
+const CART_STORAGE_KEY = 'foodmart_cart';
+const CHECKOUT_STORAGE_KEY = 'cjgb_checkout_data';
 
 // Biến lưu trữ toàn bộ sản phẩm gốc để thực hiện Lọc
 let allProducts = [];
@@ -101,14 +103,11 @@ async function fetchAndDisplayProducts() {
     }
 }
 
-// Bắt sự kiện khi tải trang
-document.addEventListener('DOMContentLoaded', fetchAndDisplayProducts);
-
 // --- CART STATE MANAGEMENT ---
-let cart = JSON.parse(localStorage.getItem('foodmart_cart')) || [];
+let cart = JSON.parse(localStorage.getItem(CART_STORAGE_KEY)) || [];
 
 function saveCart() {
-    localStorage.setItem('foodmart_cart', JSON.stringify(cart));
+    localStorage.setItem(CART_STORAGE_KEY, JSON.stringify(cart));
 }
 
 // FORMATTER TIỀN TỆ
@@ -179,9 +178,28 @@ window.checkout = function () {
         return;
     }
 
-    const maxTotal = selectedItems.reduce((acc, curr) => acc + (curr.price * curr.quantity), 0);
-    alert(`Đang chuyển hướng đến cổng thanh toán cho đơn hàng trị giá ${formatCurrency(maxTotal)}...`);
-    // Ở đây sẽ kết nối với N8N Webhook tạo Order hoặc Stripe/Momo
+    const subtotal = selectedItems.reduce((acc, curr) => acc + (curr.price * curr.quantity), 0);
+    const checkoutData = {
+        checkout_session_id: `CK${Date.now()}`,
+        created_at: new Date().toISOString(),
+        currency: 'VND',
+        item_count: selectedItems.reduce((acc, item) => acc + item.quantity, 0),
+        subtotal_amount: subtotal,
+        shipping_fee: 0,
+        discount_amount: 0,
+        total_amount: subtotal,
+        items: selectedItems.map(item => ({
+            id: item.id,
+            name: item.name,
+            price: item.price,
+            quantity: item.quantity,
+            image: item.image,
+            line_total: item.price * item.quantity
+        }))
+    };
+
+    localStorage.setItem(CHECKOUT_STORAGE_KEY, JSON.stringify(checkoutData));
+    window.location.href = 'checkout.html';
 }
 
 // RENDER GIAO DIỆN GIỎ HÀNG
@@ -375,6 +393,8 @@ function filterProducts(category, keyword) {
 
 // Chạy khởi tạo các tính năng khi DOM load xong
 document.addEventListener('DOMContentLoaded', () => {
+    renderCart();
+
     // 1. Render sản phẩm
     fetchAndDisplayProducts();
 
