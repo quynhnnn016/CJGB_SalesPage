@@ -1,5 +1,5 @@
 // Thay URL bằng Webhook Production sau khi thiết lập n8n
-const N8N_WEBHOOK_URL = 'https://thaovan176.app.n8n.cloud/webhook-test/get-products';
+const N8N_WEBHOOK_URL = 'https://huyenhannah.app.n8n.cloud/webhook-test/get-products';
 const CART_STORAGE_KEY = 'foodmart_cart';
 const CHECKOUT_STORAGE_KEY = 'cjgb_checkout_data';
 
