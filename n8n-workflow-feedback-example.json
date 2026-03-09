@@ -1,0 +1,317 @@
+{
+  "name": "Feedback Processing Workflow",
+  "description": "Process feedback from external feedback form. Handles find_order and submit_feedback actions",
+  "nodes": [
+    {
+      "parameters": {
+        "path": "feedback",
+        "responseMode": "responseNode",
+        "options": {},
+        "httpMethod": "POST"
+      },
+      "id": "fdd0e1da-26c9-4f5c-87b2-4c5e8b8b8b8b",
+      "name": "HTTP Trigger",
+      "type": "n8n-nodes-base.httpTrigger",
+      "typeVersion": 1,
+      "position": [
+        -200,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "conditions": {
+          "options": [
+            {
+              "key": "",
+              "operations": {
+                "toString": {},
+                "left": "{{ $json.action }}",
+                "operation": "equals",
+                "right": "find_order"
+              }
+            },
+            {
+              "key": "",
+              "operations": {
+                "toString": {},
+                "left": "{{ $json.action }}",
+                "operation": "equals",
+                "right": "submit_feedback"
+              }
+            }
+          ]
+        }
+      },
+      "id": "3b3b8b8b-8b8b-8b8b-8b8b-8b8b8b8b8b8b",
+      "name": "Switch",
+      "type": "n8n-nodes-base.switch",
+      "typeVersion": 1,
+      "position": [
+        0,
+        0
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "executeQuery",
+        "query": "SELECT * FROM orders WHERE order_code = {{ $json.order_code }} LIMIT 1"
+      },
+      "id": "supabase-find-order",
+      "name": "Supabase: Find Order",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        200,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "record",
+        "operation": "create",
+        "table": "orders_with_products",
+        "columns": {
+          "order_code": "{{ $json[0].order_code }}",
+          "order_id": "{{ $json[0].id }}",
+          "created_at": "{{ $json[0].created_at }}",
+          "status": "{{ $json[0].status }}"
+        }
+      },
+      "id": "supabase-enrich",
+      "name": "Supabase: Enrich Order with Products",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        400,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "responseCode": 200,
+        "responseData": "{{ { found: $json.length > 0, order: $json[0], error: null } }}"
+      },
+      "id": "response-find-success",
+      "name": "HTTP Response - Find Success",
+      "type": "n8n-nodes-base.httpTrigger",
+      "typeVersion": 1,
+      "position": [
+        600,
+        -100
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "record",
+        "operation": "create",
+        "table": "feedbacks",
+        "columns": {
+          "order_id": "{{ $json.order_id }}",
+          "order_code": "{{ $json.order_code }}",
+          "customer_provided_order_code": "{{ $json.customer_provided_order_code }}",
+          "rating_checkout": "{{ $json.order_ratings.rating_checkout }}",
+          "rating_support": "{{ $json.order_ratings.rating_support }}",
+          "rating_overall": "{{ $json.order_ratings.rating_overall }}",
+          "order_comment": "{{ $json.order_ratings.order_comment }}",
+          "client_id": "{{ $json.metadata.client_id }}",
+          "submitted_at": "{{ $json.metadata.submitted_at }}",
+          "source": "{{ $json.metadata.source }}",
+          "user_agent": "{{ $json.metadata.user_agent }}"
+        }
+      },
+      "id": "supabase-insert-feedback",
+      "name": "Supabase: Insert Feedback",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        200,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "expression": "{{ $json.data[0] }}"
+      },
+      "id": "get-feedback-id",
+      "name": "Extract Feedback ID",
+      "type": "n8n-nodes-base.functionItemIndexes",
+      "typeVersion": 2,
+      "position": [
+        400,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "fieldToSplitOut": "products",
+        "include": "all",
+        "keepRestTogether": true
+      },
+      "id": "split-products",
+      "name": "Split Products",
+      "type": "n8n-nodes-base.itemLists",
+      "typeVersion": 2,
+      "position": [
+        400,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "resource": "record",
+        "operation": "create",
+        "table": "feedback_items",
+        "columns": {
+          "feedback_id": "{{ $json.id }}",
+          "product_id": "{{ $json.products.product_id }}",
+          "sku": "{{ $json.products.sku }}",
+          "name": "{{ $json.products.name }}",
+          "rating_quality": "{{ $json.products.rating_quality }}",
+          "rating_match_description": "{{ $json.products.rating_match_description }}",
+          "rating_packaging": "{{ $json.products.rating_packaging }}",
+          "rating_delivery": "{{ $json.products.rating_delivery }}",
+          "rating_repurchase": "{{ $json.products.rating_repurchase }}",
+          "comment": "{{ $json.products.comment }}"
+        }
+      },
+      "id": "supabase-insert-feedback-items",
+      "name": "Supabase: Insert Feedback Items",
+      "type": "n8n-nodes-base.supabase",
+      "typeVersion": 1,
+      "position": [
+        600,
+        200
+      ]
+    },
+    {
+      "parameters": {
+        "responseCode": 200,
+        "responseData": "{{ { success: true, message: \"Feedback received and processed\", data: { feedback_id: $json.id[0], order_id: $json.order_id } } }}"
+      },
+      "id": "response-submit-success",
+      "name": "HTTP Response - Submit Success",
+      "type": "n8n-nodes-base.httpTrigger",
+      "typeVersion": 1,
+      "position": [
+        800,
+        100
+      ]
+    },
+    {
+      "parameters": {
+        "responseCode": 400,
+        "responseData": "{{ { success: false, message: \"Order not found\", data: null, error: \"order_not_found\" } }}"
+      },
+      "id": "response-find-error",
+      "name": "HTTP Response - Find Error",
+      "type": "n8n-nodes-base.httpTrigger",
+      "typeVersion": 1,
+      "position": [
+        600,
+        -200
+      ]
+    }
+  ],
+  "connections": {
+    "HTTP Trigger": {
+      "main": [
+        [
+          {
+            "node": "Switch",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Switch": {
+      "main": [
+        [
+          {
+            "node": "Supabase: Find Order",
+            "type": "main",
+            "index": 0
+          }
+        ],
+        [
+          {
+            "node": "Supabase: Insert Feedback",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase: Find Order": {
+      "main": [
+        [
+          {
+            "node": "Supabase: Enrich Order with Products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase: Enrich Order with Products": {
+      "main": [
+        [
+          {
+            "node": "HTTP Response - Find Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase: Insert Feedback": {
+      "main": [
+        [
+          {
+            "node": "Extract Feedback ID",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extract Feedback ID": {
+      "main": [
+        [
+          {
+            "node": "Split Products",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Split Products": {
+      "main": [
+        [
+          {
+            "node": "Supabase: Insert Feedback Items",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Supabase: Insert Feedback Items": {
+      "main": [
+        [
+          {
+            "node": "HTTP Response - Submit Success",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1"
+  }
+}
