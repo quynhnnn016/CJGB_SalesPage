@@ -1,0 +1,652 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8">
+  <meta http-equiv="X-UA-Compatible" content="IE=edge">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Ghi nhận Feedback | CJGB</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link
+    href="https://fonts.googleapis.com/css2?family=Nunito:wght@500;600;700;800&family=Open+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap"
+    rel="stylesheet">
+  <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0-alpha3/dist/css/bootstrap.min.css" rel="stylesheet"
+    integrity="sha384-KK94CHFLLe+nY2dmCWGMq91rCGa5gtU4mk92HdvYe+M/SXH301p5ILy+dN9+nJOZ" crossorigin="anonymous">
+  <link rel="stylesheet" type="text/css" href="style.css">
+  <style>
+    :root {
+      --cjgb-primary: #f7be04;
+      --cjgb-primary-strong: #f59f00;
+      --cjgb-ink: #111111;
+      --cjgb-muted: #6f7683;
+      --cjgb-surface: #ffffff;
+      --cjgb-border: #eadcb8;
+      --cjgb-shadow: 0 14px 34px rgba(17, 24, 39, 0.1);
+      --cjgb-danger: #e03131;
+      --cjgb-success: #12b886;
+    }
+
+    body {
+      font-family: "Open Sans", sans-serif;
+      color: var(--cjgb-ink);
+      background:
+        radial-gradient(circle at 8% 10%, rgba(247, 190, 4, 0.22), rgba(247, 190, 4, 0) 36%),
+        radial-gradient(circle at 92% 2%, rgba(245, 159, 0, 0.16), rgba(245, 159, 0, 0) 30%),
+        linear-gradient(180deg, #fff8eb 0%, #ffffff 50%, #f6f7fb 100%);
+      min-height: 100vh;
+    }
+
+    .feedback-page {
+      max-width: 1000px;
+      margin: 0 auto;
+      padding: 26px 16px 64px;
+    }
+
+    .feedback-hero {
+      border: 1px solid var(--cjgb-border);
+      background: linear-gradient(118deg, rgba(247, 190, 4, 0.12), rgba(247, 190, 4, 0) 46%), #ffffff;
+      border-radius: 20px;
+      padding: 40px 32px;
+      margin-bottom: 30px;
+      box-shadow: var(--cjgb-shadow);
+    }
+
+    .feedback-hero h1 {
+      font-size: 28px;
+      font-weight: 700;
+      margin-bottom: 8px;
+    }
+
+    .feedback-hero p {
+      color: var(--cjgb-muted);
+      margin-bottom: 0;
+      font-size: 14px;
+    }
+
+    .order-lookup-section {
+      background: var(--cjgb-surface);
+      border: 1px solid var(--cjgb-border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: var(--cjgb-shadow);
+    }
+
+    .order-lookup-section h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--cjgb-ink);
+    }
+
+    .order-input-group {
+      display: flex;
+      gap: 12px;
+      margin-bottom: 12px;
+    }
+
+    .order-input-group input {
+      flex: 1;
+      padding: 12px 16px;
+      border: 1px solid var(--cjgb-border);
+      border-radius: 8px;
+      font-size: 14px;
+      transition: all 0.3s ease;
+    }
+
+    .order-input-group input:focus {
+      outline: none;
+      border-color: var(--cjgb-primary-strong);
+      box-shadow: 0 0 0 3px rgba(245, 159, 0, 0.1);
+    }
+
+    .btn-search {
+      background: var(--cjgb-primary);
+      border: none;
+      color: var(--cjgb-ink);
+      padding: 12px 24px;
+      border-radius: 8px;
+      font-weight: 600;
+      cursor: pointer;
+      transition: all 0.3s ease;
+    }
+
+    .btn-search:hover {
+      background: var(--cjgb-primary-strong);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(245, 159, 0, 0.2);
+    }
+
+    .btn-search:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .status-message {
+      padding: 12px 16px;
+      border-radius: 8px;
+      margin-top: 12px;
+      font-size: 14px;
+      animation: slideIn 0.3s ease;
+    }
+
+    @keyframes slideIn {
+      from {
+        opacity: 0;
+        transform: translateY(-10px);
+      }
+      to {
+        opacity: 1;
+        transform: translateY(0);
+      }
+    }
+
+    .status-loading {
+      background: #e3f2fd;
+      color: #1976d2;
+      border: 1px solid #90caf9;
+    }
+
+    .status-error {
+      background: #ffebee;
+      color: var(--cjgb-danger);
+      border: 1px solid #ef9a9a;
+    }
+
+    .status-success {
+      background: #eefef0;
+      color: var(--cjgb-success);
+      border: 1px solid #a8e6b8;
+    }
+
+    .order-summary {
+      background: var(--cjgb-surface);
+      border: 1px solid var(--cjgb-border);
+      border-radius: 16px;
+      padding: 24px;
+      margin-bottom: 24px;
+      box-shadow: var(--cjgb-shadow);
+      animation: slideIn 0.3s ease;
+    }
+
+    .order-summary h3 {
+      font-size: 16px;
+      font-weight: 600;
+      margin-bottom: 16px;
+      color: var(--cjgb-ink);
+    }
+
+    .order-meta {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+      gap: 16px;
+      margin-bottom: 20px;
+      padding-bottom: 20px;
+      border-bottom: 1px solid var(--cjgb-border);
+    }
+
+    .order-meta-item {
+      font-size: 13px;
+    }
+
+    .order-meta-label {
+      color: var(--cjgb-muted);
+      margin-bottom: 4px;
+    }
+
+    .order-meta-value {
+      font-weight: 600;
+      color: var(--cjgb-ink);
+    }
+
+    .product-list {
+      list-style: none;
+      padding: 0;
+      margin: 0;
+    }
+
+    .product-item {
+      padding: 16px;
+      border-bottom: 1px solid var(--cjgb-border);
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+
+    .product-item:last-child {
+      border-bottom: none;
+    }
+
+    .product-info {
+      flex: 1;
+    }
+
+    .product-name {
+      font-weight: 600;
+      font-size: 14px;
+      margin-bottom: 4px;
+    }
+
+    .product-sku {
+      font-size: 12px;
+      color: var(--cjgb-muted);
+    }
+
+    .product-quantity {
+      text-align: right;
+      margin-right: 16px;
+      font-size: 14px;
+    }
+
+    .product-quantity-label {
+      color: var(--cjgb-muted);
+      font-size: 12px;
+    }
+
+    .product-quantity-value {
+      font-weight: 600;
+      display: block;
+    }
+
+    .feedback-form {
+      background: var(--cjgb-surface);
+      border: 1px solid var(--cjgb-border);
+      border-radius: 16px;
+      padding: 24px;
+      box-shadow: var(--cjgb-shadow);
+    }
+
+    .feedback-form h2 {
+      font-size: 18px;
+      font-weight: 600;
+      margin-bottom: 24px;
+      color: var(--cjgb-ink);
+    }
+
+    .product-feedback-section {
+      margin-bottom: 32px;
+      padding-bottom: 32px;
+      border-bottom: 2px solid var(--cjgb-border);
+    }
+
+    .product-feedback-section:last-of-type {
+      border-bottom: none;
+    }
+
+    .product-feedback-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--cjgb-primary-strong);
+      margin-bottom: 16px;
+    }
+
+    .rating-group {
+      margin-bottom: 16px;
+    }
+
+    .rating-label {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      display: block;
+      color: var(--cjgb-ink);
+    }
+
+    .rating-scale {
+      display: flex;
+      gap: 8px;
+      margin-bottom: 4px;
+    }
+
+    .rating-button {
+      flex: 1;
+      padding: 10px 12px;
+      border: 1px solid var(--cjgb-border);
+      background: var(--cjgb-surface);
+      border-radius: 6px;
+      cursor: pointer;
+      font-size: 13px;
+      font-weight: 600;
+      transition: all 0.3s ease;
+      text-align: center;
+    }
+
+    .rating-button:hover {
+      border-color: var(--cjgb-primary-strong);
+      background: rgba(247, 190, 4, 0.1);
+    }
+
+    .rating-button.selected {
+      background: var(--cjgb-primary);
+      border-color: var(--cjgb-primary-strong);
+      color: var(--cjgb-ink);
+    }
+
+    .rating-scale-legend {
+      display: flex;
+      justify-content: space-between;
+      font-size: 12px;
+      color: var(--cjgb-muted);
+      margin-top: 6px;
+    }
+
+    .rating-scale-legend span {
+      flex: 1;
+      text-align: center;
+    }
+
+    .comment-group {
+      margin-bottom: 16px;
+    }
+
+    .comment-group label {
+      font-size: 14px;
+      font-weight: 500;
+      margin-bottom: 8px;
+      display: block;
+      color: var(--cjgb-ink);
+    }
+
+    .comment-group textarea {
+      width: 100%;
+      padding: 12px;
+      border: 1px solid var(--cjgb-border);
+      border-radius: 8px;
+      font-size: 14px;
+      font-family: "Open Sans", sans-serif;
+      resize: vertical;
+      min-height: 80px;
+      transition: all 0.3s ease;
+    }
+
+    .comment-group textarea:focus {
+      outline: none;
+      border-color: var(--cjgb-primary-strong);
+      box-shadow: 0 0 0 3px rgba(245, 159, 0, 0.1);
+    }
+
+    .comment-counter {
+      font-size: 12px;
+      color: var(--cjgb-muted);
+      margin-top: 4px;
+      text-align: right;
+    }
+
+    .order-feedback-section {
+      margin-top: 32px;
+      padding-top: 32px;
+      border-top: 2px solid var(--cjgb-primary);
+    }
+
+    .order-feedback-title {
+      font-size: 16px;
+      font-weight: 600;
+      color: var(--cjgb-primary-strong);
+      margin-bottom: 16px;
+    }
+
+    .form-actions {
+      display: flex;
+      gap: 12px;
+      margin-top: 24px;
+      justify-content: center;
+    }
+
+    .btn-submit {
+      background: var(--cjgb-primary);
+      border: none;
+      color: var(--cjgb-ink);
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      flex: 1;
+      max-width: 300px;
+    }
+
+    .btn-submit:hover:not(:disabled) {
+      background: var(--cjgb-primary-strong);
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(245, 159, 0, 0.2);
+    }
+
+    .btn-submit:disabled {
+      opacity: 0.6;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    .btn-reset {
+      background: transparent;
+      border: 1px solid var(--cjgb-border);
+      color: var(--cjgb-ink);
+      padding: 14px 32px;
+      border-radius: 8px;
+      font-weight: 600;
+      font-size: 15px;
+      cursor: pointer;
+      transition: all 0.3s ease;
+      flex: 1;
+      max-width: 300px;
+    }
+
+    .btn-reset:hover {
+      border-color: var(--cjgb-ink);
+      background: rgba(17, 24, 39, 0.05);
+    }
+
+    .validation-error {
+      color: var(--cjgb-danger);
+      font-size: 13px;
+      margin-top: 8px;
+    }
+
+    .loader {
+      display: inline-block;
+      width: 16px;
+      height: 16px;
+      border: 2px solid rgba(0, 0, 0, 0.1);
+      border-top-color: var(--cjgb-primary-strong);
+      border-radius: 50%;
+      animation: spin 0.6s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle;
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg);
+      }
+    }
+
+    .required-indicator {
+      color: var(--cjgb-danger);
+    }
+
+    @media (max-width: 768px) {
+      .feedback-hero {
+        padding: 24px 16px;
+      }
+
+      .feedback-hero h1 {
+        font-size: 24px;
+      }
+
+      .order-input-group {
+        flex-direction: column;
+      }
+
+      .product-item {
+        flex-direction: column;
+        align-items: flex-start;
+      }
+
+      .product-quantity {
+        margin-right: 0;
+        margin-top: 8px;
+      }
+
+      .form-actions {
+        flex-direction: column;
+      }
+
+      .btn-submit,
+      .btn-reset {
+        max-width: 100%;
+      }
+    }
+  </style>
+</head>
+
+<body>
+  <div class="feedback-page">
+    <!-- Hero Section -->
+    <div class="feedback-hero">
+      <h1>Ghi nhận Feedback</h1>
+      <p>Chia sẻ trải nghiệm của bạn về sản phẩm và dịch vụ của chúng tôi. Phản hồi của bạn rất quan trọng!</p>
+    </div>
+
+    <!-- Order Lookup Section -->
+    <div class="order-lookup-section">
+      <h2>Tìm đơn hàng của bạn</h2>
+      <div class="order-input-group">
+        <input 
+          type="text" 
+          id="orderCodeInput" 
+          placeholder="Nhập mã đơn hàng (ví dụ: ORD-2024-001)"
+          maxlength="64"
+          aria-label="Mã đơn hàng"
+        >
+        <button class="btn-search" id="searchBtn" onclick="handleSearchOrder()">
+          Tìm đơn
+        </button>
+      </div>
+      <div id="statusMessage"></div>
+    </div>
+
+    <!-- Order Summary Section (Hidden by default) -->
+    <div id="orderSummary" class="order-summary" style="display: none;">
+      <h3>Thông tin đơn hàng</h3>
+      <div class="order-meta">
+        <div class="order-meta-item">
+          <div class="order-meta-label">Mã đơn hàng</div>
+          <div class="order-meta-value" id="orderCodeDisplay">-</div>
+        </div>
+        <div class="order-meta-item">
+          <div class="order-meta-label">Ngày đặt hàng</div>
+          <div class="order-meta-value" id="orderDateDisplay">-</div>
+        </div>
+        <div class="order-meta-item">
+          <div class="order-meta-label">Trạng thái</div>
+          <div class="order-meta-value" id="orderStatusDisplay">-</div>
+        </div>
+      </div>
+      <h3 style="margin-bottom: 12px;">Sản phẩm</h3>
+      <ul class="product-list" id="productList"></ul>
+    </div>
+
+    <!-- Feedback Form (Hidden by default) -->
+    <div id="feedbackContainer" style="display: none;">
+      <div class="feedback-form">
+        <h2>Biểu mẫu phản hồi</h2>
+        <form id="feedbackForm" onsubmit="handleSubmitFeedback(event)">
+          <!-- Product-level Feedback -->
+          <div id="productFeedbackContainer"></div>
+
+          <!-- Order-level Feedback -->
+          <div class="order-feedback-section">
+            <h3 class="order-feedback-title">Đánh giá chung về đơn hàng</h3>
+
+            <!-- Checkout Experience -->
+            <div class="rating-group">
+              <label class="rating-label">
+                Trải nghiệm đặt hàng và thanh toán <span class="required-indicator">*</span>
+              </label>
+              <div class="rating-scale" data-field="rating_checkout">
+                <button type="button" class="rating-button" data-value="1">1</button>
+                <button type="button" class="rating-button" data-value="2">2</button>
+                <button type="button" class="rating-button" data-value="3">3</button>
+                <button type="button" class="rating-button" data-value="4">4</button>
+                <button type="button" class="rating-button" data-value="5">5</button>
+              </div>
+              <div class="rating-scale-legend">
+                <span>Rất không hài lòng</span>
+                <span>Rất hài lòng</span>
+              </div>
+            </div>
+
+            <!-- Support Rating -->
+            <div class="rating-group">
+              <label class="rating-label">
+                Hỗ trợ khách hàng (nếu có tương tác) <span class="required-indicator">*</span>
+              </label>
+              <div class="rating-scale" data-field="rating_support">
+                <button type="button" class="rating-button" data-value="1">1</button>
+                <button type="button" class="rating-button" data-value="2">2</button>
+                <button type="button" class="rating-button" data-value="3">3</button>
+                <button type="button" class="rating-button" data-value="4">4</button>
+                <button type="button" class="rating-button" data-value="5">5</button>
+              </div>
+              <div class="rating-scale-legend">
+                <span>Rất không hài lòng</span>
+                <span>Rất hài lòng</span>
+              </div>
+            </div>
+
+            <!-- Overall Rating -->
+            <div class="rating-group">
+              <label class="rating-label">
+                Tổng thể hài lòng với đơn hàng <span class="required-indicator">*</span>
+              </label>
+              <div class="rating-scale" data-field="rating_overall">
+                <button type="button" class="rating-button" data-value="1">1</button>
+                <button type="button" class="rating-button" data-value="2">2</button>
+                <button type="button" class="rating-button" data-value="3">3</button>
+                <button type="button" class="rating-button" data-value="4">4</button>
+                <button type="button" class="rating-button" data-value="5">5</button>
+              </div>
+              <div class="rating-scale-legend">
+                <span>Rất không hài lòng</span>
+                <span>Rất hài lòng</span>
+              </div>
+            </div>
+
+            <!-- Order Comment -->
+            <div class="comment-group">
+              <label for="orderComment">Ghi chú tổng quan (tùy chọn)</label>
+              <textarea 
+                id="orderComment" 
+                maxlength="1000"
+                placeholder="Chia sẻ những ghi chú hoặc đề nghị của bạn..."
+              ></textarea>
+              <div class="comment-counter">
+                <span id="orderCommentCount">0</span>/1000
+              </div>
+            </div>
+          </div>
+
+          <!-- Form Actions -->
+          <div class="form-actions">
+            <button type="submit" class="btn-submit" id="submitBtn">Gửi phản hồi</button>
+            <button type="reset" class="btn-reset" id="resetBtn">Xóa</button>
+          </div>
+        </form>
+      </div>
+    </div>
+  </div>
+
+  <script src="js/feedback.utils.js"></script>
+  <script src="js/feedback.js"></script>
+  <script>
+    window.ENV = {
+      N8N_FEEDBACK_WORKFLOW_URL: 'https://quynhnnn23410.app.n8n.cloud/webhook-test/feedback-find-order',
+      N8N_FEEDBACK_SUBMIT_URL: 'https://quynhnnn23410.app.n8n.cloud/webhook-test/feedback-submit'
+    };
+  </script>
+</body>
+
+</html>

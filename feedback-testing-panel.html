@@ -1,0 +1,825 @@
+<!DOCTYPE html>
+<html lang="vi">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Feedback API Testing Panel</title>
+  <style>
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+    }
+
+    body {
+      font-family: 'Monaco', 'Menlo', 'Ubuntu Mono', monospace;
+      background: #1e1e1e;
+      color: #e0e0e0;
+      padding: 20px;
+      line-height: 1.6;
+    }
+
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+    }
+
+    h1 {
+      color: #f7be04;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #f7be04;
+      padding-bottom: 10px;
+    }
+
+    .test-section {
+      background: #2d2d2d;
+      border: 1px solid #444;
+      border-radius: 8px;
+      padding: 20px;
+      margin-bottom: 20px;
+    }
+
+    .test-section h2 {
+      color: #f59f00;
+      margin-bottom: 15px;
+      font-size: 16px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+    }
+
+    .control-group {
+      margin-bottom: 15px;
+    }
+
+    label {
+      display: block;
+      margin-bottom: 5px;
+      color: #b0b0b0;
+      font-size: 12px;
+      text-transform: uppercase;
+    }
+
+    input[type="text"],
+    input[type="number"],
+    textarea,
+    select {
+      width: 100%;
+      padding: 10px;
+      background: #1e1e1e;
+      border: 1px solid #444;
+      border-radius: 4px;
+      color: #e0e0e0;
+      font-family: inherit;
+      font-size: 12px;
+    }
+
+    input[type="text"]:focus,
+    input[type="number"]:focus,
+    textarea:focus,
+    select:focus {
+      outline: none;
+      border-color: #f7be04;
+      box-shadow: 0 0 0 2px rgba(247, 190, 4, 0.2);
+    }
+
+    textarea {
+      resize: vertical;
+      min-height: 100px;
+      font-family: 'Monaco', monospace;
+    }
+
+    .button-group {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      margin-top: 15px;
+    }
+
+    button {
+      padding: 10px 20px;
+      background: #f7be04;
+      color: #1e1e1e;
+      border: none;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 600;
+      font-size: 12px;
+      text-transform: uppercase;
+      transition: all 0.3s ease;
+    }
+
+    button:hover {
+      background: #f59f00;
+      transform: translateY(-2px);
+      box-shadow: 0 4px 12px rgba(247, 190, 4, 0.2);
+    }
+
+    button:disabled {
+      opacity: 0.5;
+      cursor: not-allowed;
+      transform: none;
+    }
+
+    button.secondary {
+      background: #444;
+      color: #e0e0e0;
+    }
+
+    button.secondary:hover {
+      background: #555;
+    }
+
+    .output {
+      background: #1a1a1a;
+      border: 1px solid #333;
+      border-radius: 4px;
+      padding: 15px;
+      margin-top: 15px;
+      overflow-x: auto;
+      max-height: 300px;
+      overflow-y: auto;
+    }
+
+    .output pre {
+      margin: 0;
+      white-space: pre-wrap;
+      word-break: break-word;
+    }
+
+    .output-label {
+      font-size: 11px;
+      color: #888;
+      text-transform: uppercase;
+      margin-bottom: 8px;
+    }
+
+    .status {
+      padding: 10px 15px;
+      border-radius: 4px;
+      margin-top: 10px;
+      font-size: 12px;
+      font-weight: 600;
+    }
+
+    .status.success {
+      background: rgba(18, 184, 134, 0.2);
+      color: #12b886;
+      border: 1px solid rgba(18, 184, 134, 0.5);
+    }
+
+    .status.error {
+      background: rgba(224, 49, 49, 0.2);
+      color: #e03131;
+      border: 1px solid rgba(224, 49, 49, 0.5);
+    }
+
+    .status.info {
+      background: rgba(25, 118, 210, 0.2);
+      color: #1976d2;
+      border: 1px solid rgba(25, 118, 210, 0.5);
+    }
+
+    .row {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 15px;
+    }
+
+    .row.full {
+      grid-template-columns: 1fr;
+    }
+
+    .tabs {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+      border-bottom: 2px solid #444;
+    }
+
+    .tab-button {
+      padding: 10px 20px;
+      background: transparent;
+      border: none;
+      border-bottom: 3px solid transparent;
+      color: #b0b0b0;
+      cursor: pointer;
+      font-weight: 600;
+      transition: all 0.3s ease;
+    }
+
+    .tab-button.active {
+      color: #f7be04;
+      border-bottom-color: #f7be04;
+    }
+
+    .tab-content {
+      display: none;
+    }
+
+    .tab-content.active {
+      display: block;
+    }
+
+    .rate-limit-info {
+      background: #2a3f3f;
+      border-left: 4px solid #12b886;
+      padding: 12px;
+      margin-top: 10px;
+      border-radius: 4px;
+      font-size: 12px;
+    }
+
+    .loading::after {
+      content: '.';
+      animation: dots 1.5s steps(4, end) infinite;
+    }
+
+    @keyframes dots {
+      0%,
+      20% {
+        content: '.';
+      }
+      40% {
+        content: '..';
+      }
+      60% {
+        content: '...';
+      }
+    }
+
+    .divider {
+      height: 1px;
+      background: #444;
+      margin: 20px 0;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="container">
+    <h1>🧪 Feedback API Testing Panel</h1>
+
+    <!-- Config Section -->
+    <div class="test-section">
+      <h2>⚙️ Configuration</h2>
+
+      <div class="control-group">
+        <label>Workflow URL (Find Order)</label>
+        <input type="text" id="workflowUrl" placeholder="http://localhost:5678/webhook/feedback-find-order"
+          value="http://localhost:5678/webhook/feedback-find-order">
+      </div>
+
+      <div class="control-group">
+        <label>Submit URL (Submit Feedback)</label>
+        <input type="text" id="submitUrl" placeholder="http://localhost:5678/webhook/feedback-submit"
+          value="http://localhost:5678/webhook/feedback-submit">
+      </div>
+
+      <div class="button-group">
+        <button onclick="saveConfig()">Save Config</button>
+        <button class="secondary" onclick="useLocalStorage()">Use Mock Mode</button>
+        <button class="secondary" onclick="clearConfig()">Clear Config</button>
+      </div>
+
+      <div id="configStatus"></div>
+    </div>
+
+    <!-- Tabs -->
+    <div class="tabs">
+      <button class="tab-button active" onclick="switchTab('find-order')">Find Order</button>
+      <button class="tab-button" onclick="switchTab('submit-feedback')">Submit Feedback</button>
+      <button class="tab-button" onclick="switchTab('test-suite')">Test Suite</button>
+      <button class="tab-button" onclick="switchTab('logs')">Logs</button>
+    </div>
+
+    <!-- Find Order Tab -->
+    <div id="find-order" class="tab-content active">
+      <div class="test-section">
+        <h2>🔍 Find Order Test</h2>
+
+        <div class="control-group">
+          <label>Order Code</label>
+          <input type="text" id="findOrderCode" placeholder="e.g., ORD-2024-001" value="ORD-2024-001">
+        </div>
+
+        <div class="button-group">
+          <button onclick="testFindOrder()">Send Request</button>
+          <button class="secondary" onclick="clearFindOrder()">Clear</button>
+        </div>
+
+        <div id="findOrderOutput"></div>
+      </div>
+    </div>
+
+    <!-- Submit Feedback Tab -->
+    <div id="submit-feedback" class="tab-content">
+      <div class="test-section">
+        <h2>📝 Submit Feedback Test</h2>
+
+        <div class="row">
+          <div class="control-group">
+            <label>Order Code</label>
+            <input type="text" id="submitOrderCode" placeholder="e.g., ORD-2024-001" value="ORD-2024-001">
+          </div>
+
+          <div class="control-group">
+            <label>Order ID</label>
+            <input type="text" id="submitOrderId" placeholder="e.g., ORD_ID_123" value="ORD_ID_123">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="control-group">
+            <label>Product ID</label>
+            <input type="text" id="productId" placeholder="e.g., PROD-001" value="PROD-001">
+          </div>
+
+          <div class="control-group">
+            <label>Product SKU</label>
+            <input type="text" id="productSku" placeholder="e.g., CHOC-001" value="CHOC-001">
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label>Product Name</label>
+          <input type="text" id="productName" placeholder="e.g., Chocolate 70%"
+            value="Chunji Premium Chocolate">
+        </div>
+
+        <div class="row">
+          <div class="control-group">
+            <label>Quality Rating (1-5)</label>
+            <input type="number" id="ratingQuality" min="1" max="5" value="5">
+          </div>
+
+          <div class="control-group">
+            <label>Description Rating (1-5)</label>
+            <input type="number" id="ratingDescription" min="1" max="5" value="4">
+          </div>
+        </div>
+
+        <div class="row">
+          <div class="control-group">
+            <label>Overall Order Rating (1-5)</label>
+            <input type="number" id="ratingOverall" min="1" max="5" value="5">
+          </div>
+
+          <div class="control-group">
+            <label>Checkout Rating (1-5)</label>
+            <input type="number" id="ratingCheckout" min="1" max="5" value="5">
+          </div>
+        </div>
+
+        <div class="control-group">
+          <label>Comment (Optional)</label>
+          <textarea id="feedback" placeholder="Enter your feedback...">This is great chocolate!</textarea>
+        </div>
+
+        <div class="button-group">
+          <button onclick="testSubmitFeedback()">Send Feedback</button>
+          <button class="secondary" onclick="generateSamplePayload()">Generate Sample</button>
+          <button class="secondary" onclick="clearFeedback()">Clear</button>
+        </div>
+
+        <div id="submitFeedbackOutput"></div>
+      </div>
+    </div>
+
+    <!-- Test Suite Tab -->
+    <div id="test-suite" class="tab-content">
+      <div class="test-section">
+        <h2>🧪 Automated Test Suite</h2>
+
+        <div class="button-group">
+          <button onclick="runTestSuite()">Run All Tests</button>
+          <button class="secondary" onclick="runValidationTests()">Validation Tests Only</button>
+          <button class="secondary" onclick="runRateLimitTest()">Rate Limit Test</button>
+        </div>
+
+        <div id="testSuiteOutput"></div>
+      </div>
+    </div>
+
+    <!-- Logs Tab -->
+    <div id="logs" class="tab-content">
+      <div class="test-section">
+        <h2>📋 Request/Response Logs</h2>
+
+        <div class="button-group">
+          <button class="secondary" onclick="exportLogs()">Export Logs</button>
+          <button class="secondary" onclick="clearLogs()">Clear Logs</button>
+        </div>
+
+        <div id="logsOutput" class="output" style="max-height: 500px;">
+          <div class="output-label">No logs yet</div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- Scripts -->
+  <script src="js/feedback.utils.js"></script>
+  <script>
+    // Global state
+    let requestLogs = [];
+
+    // Tab switching
+    function switchTab(tabName) {
+      document.querySelectorAll('.tab-content').forEach(el => el.classList.remove('active'));
+      document.querySelectorAll('.tab-button').forEach(el => el.classList.remove('active'));
+
+      document.getElementById(tabName).classList.add('active');
+      event.target.classList.add('active');
+    }
+
+    // Configuration
+    function saveConfig() {
+      const workflowUrl = document.getElementById('workflowUrl').value;
+      const submitUrl = document.getElementById('submitUrl').value;
+
+      if (FeedbackConfig) {
+        FeedbackConfig.setEndpoint('workflow', workflowUrl);
+        FeedbackConfig.setEndpoint('submit', submitUrl);
+      } else {
+        localStorage.setItem('n8n_workflow_url', workflowUrl);
+        localStorage.setItem('n8n_submit_url', submitUrl);
+      }
+
+      showStatus('configStatus', 'Configuration saved!', 'success');
+    }
+
+    function useLocalStorage() {
+      if (FeedbackConfig) {
+        FeedbackConfig.setMockMode();
+      } else {
+        localStorage.removeItem('n8n_workflow_url');
+        localStorage.removeItem('n8n_submit_url');
+      }
+      document.getElementById('workflowUrl').value = '';
+      document.getElementById('submitUrl').value = '';
+      showStatus('configStatus', 'Mock mode enabled (using local storage fallback)', 'info');
+    }
+
+    function clearConfig() {
+      if (FeedbackConfig) {
+        FeedbackConfig.clearConfig();
+      }
+      document.getElementById('workflowUrl').value = '';
+      document.getElementById('submitUrl').value = '';
+      showStatus('configStatus', 'Configuration cleared', 'info');
+    }
+
+    // Find Order Tests
+    async function testFindOrder() {
+      const orderCode = document.getElementById('findOrderCode').value.trim();
+      const output = document.getElementById('findOrderOutput');
+
+      if (!orderCode) {
+        showStatus(null, 'Order code is required', 'error', output);
+        return;
+      }
+
+      const validation = validateOrderCode(orderCode);
+      if (!validation.valid) {
+        showStatus(null, validation.error, 'error', output);
+        return;
+      }
+
+      const payload = {
+        action: 'find_order',
+        order_code: orderCode
+      };
+
+      await sendRequest(
+        document.getElementById('workflowUrl').value || '/api/mock/find-order',
+        payload,
+        output,
+        'Find Order'
+      );
+    }
+
+    function clearFindOrder() {
+      document.getElementById('findOrderCode').value = '';
+      document.getElementById('findOrderOutput').innerHTML = '';
+    }
+
+    // Submit Feedback Tests
+    function testSubmitFeedback() {
+      const orderCode = document.getElementById('submitOrderCode').value.trim();
+      const output = document.getElementById('submitFeedbackOutput');
+
+      if (!orderCode) {
+        showStatus(null, 'Order code is required', 'error', output);
+        return;
+      }
+
+      const payload = {
+        action: 'submit_feedback',
+        order_code: orderCode,
+        order_id: document.getElementById('submitOrderId').value,
+        customer_provided_order_code: orderCode,
+        products: [
+          {
+            product_id: document.getElementById('productId').value,
+            sku: document.getElementById('productSku').value,
+            name: document.getElementById('productName').value,
+            rating_quality: parseInt(document.getElementById('ratingQuality').value),
+            rating_match_description: parseInt(document.getElementById('ratingDescription').value),
+            rating_packaging: 4,
+            rating_delivery: 4,
+            rating_repurchase: 5,
+            comment: document.getElementById('feedback').value || null
+          }
+        ],
+        order_ratings: {
+          rating_checkout: parseInt(document.getElementById('ratingCheckout').value),
+          rating_support: 4,
+          rating_overall: parseInt(document.getElementById('ratingOverall').value),
+          order_comment: 'Test feedback'
+        },
+        metadata: {
+          submitted_at: new Date().toISOString(),
+          source: 'test_panel',
+          client_id: generateUUID(),
+          user_agent: navigator.userAgent
+        }
+      };
+
+      sendRequest(
+        document.getElementById('submitUrl').value || '/api/mock/submit-feedback',
+        payload,
+        output,
+        'Submit Feedback'
+      );
+    }
+
+    function generateSamplePayload() {
+      const payload = {
+        action: 'submit_feedback',
+        order_code: 'ORD-2024-SAMPLE',
+        order_id: 'ORD_ID_SAMPLE',
+        customer_provided_order_code: 'ORD-2024-SAMPLE',
+        products: [
+          {
+            product_id: 'PROD-SAMPLE',
+            sku: 'SKU-SAMPLE',
+            name: 'Sample Product',
+            rating_quality: 5,
+            rating_match_description: 4,
+            rating_packaging: 5,
+            rating_delivery: 4,
+            rating_repurchase: 5,
+            comment: 'Sample comment'
+          }
+        ],
+        order_ratings: {
+          rating_checkout: 5,
+          rating_support: 4,
+          rating_overall: 5,
+          order_comment: 'Sample order comment'
+        },
+        metadata: {
+          submitted_at: new Date().toISOString(),
+          source: 'test_panel',
+          client_id: generateUUID(),
+          user_agent: navigator.userAgent
+        }
+      };
+
+      displayOutput(document.getElementById('submitFeedbackOutput'), JSON.stringify(payload, null, 2), 'Sample Payload');
+    }
+
+    function clearFeedback() {
+      document.getElementById('submitOrderCode').value = '';
+      document.getElementById('submitOrderId').value = '';
+      document.getElementById('productId').value = '';
+      document.getElementById('productSku').value = '';
+      document.getElementById('productName').value = '';
+      document.getElementById('feedback').value = '';
+      document.getElementById('submitFeedbackOutput').innerHTML = '';
+    }
+
+    // Test Suite
+    async function runTestSuite() {
+      const output = document.getElementById('testSuiteOutput');
+      output.innerHTML = '<div class="status info">Running tests...</div>';
+
+      let results = [];
+
+      // Test 1: Order code validation
+      const result1 = validateOrderCode('ORD-2024-001');
+      results.push({
+        name: 'Valid Order Code',
+        passed: result1.valid === true,
+        result: result1
+      });
+
+      // Test 2: Invalid order code
+      const result2 = validateOrderCode('');
+      results.push({
+        name: 'Empty Order Code',
+        passed: result2.valid === false,
+        result: result2.error
+      });
+
+      // Test 3: Rate limit
+      rateLimitStore.clear();
+      const result3 = checkRateLimit('TEST-ORD');
+      results.push({
+        name: 'Rate Limit - First Request',
+        passed: result3.allowed === true,
+        result: result3
+      });
+
+      // Test 4: Rate limit second request
+      const result4 = checkRateLimit('TEST-ORD');
+      results.push({
+        name: 'Rate Limit - Second Request (should be blocked)',
+        passed: result4.allowed === false,
+        result: result4
+      });
+
+      // Test 5: UUID generation
+      const uuid1 = generateUUID();
+      const uuid2 = generateUUID();
+      results.push({
+        name: 'UUID Generation (Unique)',
+        passed: uuid1 !== uuid2 && uuid1.length === 36,
+        result: { uuid1, uuid2 }
+      });
+
+      // Display results
+      let html = '<table style="width:100%; border-collapse: collapse;">';
+      html += '<tr style="border-bottom: 1px solid #444;"><th style="text-align:left; padding:10px;">Test</th><th style="text-align:left; padding:10px;">Status</th></tr>';
+
+      results.forEach(test => {
+        const status = test.passed ? '✓ PASS' : '✗ FAIL';
+        const color = test.passed ? '#12b886' : '#e03131';
+        html += `<tr style="border-bottom: 1px solid #444;">
+          <td style="padding:10px;">${test.name}</td>
+          <td style="padding:10px; color:${color};">${status}</td>
+        </tr>`;
+      });
+
+      html += '</table>';
+
+      const passed = results.filter(r => r.passed).length;
+      const total = results.length;
+      const summary = `<div class="status ${passed === total ? 'success' : 'error'}" style="margin-top:15px;">
+        Results: ${passed}/${total} tests passed
+      </div>`;
+
+      output.innerHTML = html + summary;
+    }
+
+    function runValidationTests() {
+      const tests = [
+        { code: 'ORD-2024-001', expected: true },
+        { code: '', expected: false },
+        { code: 'ORD@2024', expected: false },
+        { code: 'A'.repeat(65), expected: false }
+      ];
+
+      let html = '<div style="margin-top: 15px;">';
+      tests.forEach((test, i) => {
+        const result = validateOrderCode(test.code);
+        const passed = result.valid === test.expected;
+        html += `<div class="status ${passed ? 'success' : 'error'}" style="margin-bottom: 10px;">
+          Test ${i + 1}: ${passed ? '✓' : '✗'} "${test.code.substring(0, 20)}" - ${result.error || 'valid'}
+        </div>`;
+      });
+      html += '</div>';
+
+      document.getElementById('testSuiteOutput').innerHTML = html;
+    }
+
+    function runRateLimitTest() {
+      const output = document.getElementById('testSuiteOutput');
+      rateLimitStore.clear();
+
+      let html = '<div style="margin-top: 15px;">';
+
+      // Test 1
+      const test1 = checkRateLimit('RATE-TEST-001');
+      html += `<div class="status success" style="margin-bottom: 10px;">
+        Request 1: ${test1.allowed ? '✓ Allowed' : '✗ Blocked'}
+      </div>`;
+
+      // Test 2
+      const test2 = checkRateLimit('RATE-TEST-001');
+      html += `<div class="status ${test2.allowed ? 'error' : 'success'}" style="margin-bottom: 10px;">
+        Request 2 (same code): ${test2.allowed ? '✗ Incorrectly Allowed' : `✓ Blocked (${test2.remainingSeconds}s remaining)`}
+      </div>`;
+
+      // Test 3
+      const test3 = checkRateLimit('RATE-TEST-002');
+      html += `<div class="status success" style="margin-bottom: 10px;">
+        Request 1 (different code): ${test3.allowed ? '✓ Allowed' : '✗ Blocked'}
+      </div>`;
+
+      html += '</div>';
+      output.innerHTML = html;
+    }
+
+    // HTTP Request Handler
+    async function sendRequest(url, payload, outputDom, label) {
+      const output = outputDom || document.getElementById('logsOutput');
+
+      try {
+        showStatus(null, 'Sending request...', 'info', outputDom);
+
+        const response = await fetch(url, {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+
+        const data = await response.json();
+
+        const logEntry = {
+          timestamp: new Date().toISOString(),
+          label,
+          status: response.status,
+          payload,
+          response: data
+        };
+
+        requestLogs.push(logEntry);
+        addLog(logEntry);
+
+        if (response.ok && data.success !== false) {
+          showStatus(null, 'Request successful!', 'success', outputDom);
+          displayOutput(outputDom, JSON.stringify(data, null, 2), 'Response');
+        } else {
+          showStatus(null, `Error: ${data.message || response.statusText}`, 'error', outputDom);
+          displayOutput(outputDom, JSON.stringify(data, null, 2), 'Error Response');
+        }
+      } catch (error) {
+        showStatus(null, `Request failed: ${error.message}`, 'error', outputDom);
+        displayOutput(outputDom, error.message, 'Error');
+      }
+    }
+
+    // UI Helpers
+    function showStatus(elementId, message, type, outputDom) {
+      const statusDiv = document.createElement('div');
+      statusDiv.className = `status ${type}`;
+      statusDiv.innerHTML = message;
+
+      if (outputDom) {
+        outputDom.innerHTML = '';
+        outputDom.appendChild(statusDiv);
+      } else if (elementId) {
+        document.getElementById(elementId).innerHTML = '';
+        document.getElementById(elementId).appendChild(statusDiv);
+      }
+    }
+
+    function displayOutput(dom, content, label) {
+      const div = document.createElement('div');
+      div.className = 'output';
+      div.innerHTML = `<div class="output-label">${label}</div><pre>${escapeHtml(content)}</pre>`;
+      dom.appendChild(div);
+    }
+
+    function addLog(entry) {
+      const logs = document.getElementById('logsOutput');
+      const logItem = document.createElement('div');
+      logItem.style.padding = '10px';
+      logItem.style.borderBottom = '1px solid #444';
+      logItem.innerHTML = `
+        <strong>${entry.timestamp}</strong> - ${entry.label} (${entry.status})<br>
+        <small style="color: #888;">Request: ${JSON.stringify(entry.payload).substring(0, 100)}...</small>
+      `;
+      logs.appendChild(logItem);
+    }
+
+    function clearLogs() {
+      requestLogs = [];
+      document.getElementById('logsOutput').innerHTML = '<div class="output-label">Logs cleared</div>';
+    }
+
+    function exportLogs() {
+      const data = JSON.stringify(requestLogs, null, 2);
+      const blob = new Blob([data], { type: 'application/json' });
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement('a');
+      a.href = url;
+      a.download = `feedback-logs-${new Date().toISOString()}.json`;
+      a.click();
+    }
+
+    // Initialize
+    document.addEventListener('DOMContentLoaded', () => {
+      console.log('Testing Panel Ready!');
+      if (typeof FeedbackConfig !== 'undefined') {
+        const config = FeedbackConfig.getConfig();
+        if (config.workflow_url) document.getElementById('workflowUrl').value = config.workflow_url;
+        if (config.submit_url) document.getElementById('submitUrl').value = config.submit_url;
+      }
+    });
+  </script>
+</body>
+
+</html>
