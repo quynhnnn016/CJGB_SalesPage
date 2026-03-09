@@ -103,25 +103,73 @@ async function handleSearchOrder() {
 
     if (workflowUrl && workflowUrl !== '/api/n8n/feedback/find') {
       // Real endpoint available
-      response = await makeRequest(workflowUrl, {
+      const rawResponse = await makeRequest(workflowUrl, {
         method: 'POST',
         body: payloadFind
       });
+      console.log("RAW N8N:", rawResponse);
+
+      // Hàm bóc tách mọi lớp vỏ bọc mảng hoặc chuỗi
+      function unwrap(obj) {
+        if (!obj) return {};
+        if (typeof obj === 'string') {
+          try { obj = JSON.parse(obj); } catch (e) { }
+        }
+        if (Array.isArray(obj)) return obj.length > 0 ? unwrap(obj[0]) : {};
+        if (typeof obj === 'object') {
+          if (obj.data) return unwrap(obj.data);
+          if (obj.json) return unwrap(obj.json);
+          if (obj.body) return unwrap(obj.body);
+          return obj;
+        }
+        return obj;
+      }
+
+      let extracted = unwrap(rawResponse);
+      console.log("EXTRACTED N8N:", extracted);
+
+      // Bọc cuối cùng đảm bảo chuẩn
+      response = {
+        found: extracted.found === true || !!extracted.order || (extracted.products && extracted.products.length > 0),
+        order: extracted.order || extracted
+      }
     } else {
       // Mock response for development
       response = await mockFindOrder(orderCode);
     }
 
+    // Lưu tạm extracted để throw error debug nếu cần
+    const debugStr = response.order ? JSON.stringify(response.order).substring(0, 100) : "empty";
+
     if (!response.found) {
-      showStatusMessage('❌ Không tìm thấy mã đơn hàng "' + escapeHtml(orderCode) + '". Vui lòng kiểm tra lại mã hoặc liên hệ hỗ trợ.', 'error');
+      showStatusMessage('❌ Không tìm thấy mã đơn hàng "' + escapeHtml(orderCode) + '". N8N Trả về: ' + escapeHtml(debugStr) + '...', 'error');
       orderSummary.style.display = 'none';
       feedbackContainer.style.display = 'none';
       searchBtn.disabled = false;
       return;
     }
 
-    // Process order data
-    currentOrder = response.order;
+    // Xử lý linh hoạt dữ liệu trả về từ N8N (tránh lỗi nếu cấu trúc không chuẩn 100%)
+    const rawOrder = response.order || response || {};
+
+    // N8N's respondToWebhook might nest products deep inside the object, fetch it explicitly
+    const rawProducts = rawOrder.products || response.products || (rawOrder.order && rawOrder.order.products) || [];
+
+    currentOrder = {
+      order_code: rawOrder.order_code || rawOrder.order_number || orderCode,
+      order_id: rawOrder.order_id || rawOrder.id || "N/A",
+      created_at: rawOrder.created_at || new Date().toISOString(),
+      status: rawOrder.status || "đang giao",
+      products: rawProducts.map((p, index) => ({
+        product_id: p.product_id || p.id || `PROD-${index}`,
+        sku: p.sku || "",
+        name: p.name || `Sản phẩm ${index + 1}`,
+        quantity: p.quantity || 1,
+        price: p.origin_price || p.price || 0,
+        currency: p.currency || 'VND'
+      }))
+    };
+
     displayOrderSummary(currentOrder);
     displayProductFeedback(currentOrder);
     feedbackContainer.style.display = 'block';
@@ -189,21 +237,24 @@ function displayOrderSummary(order) {
 
   // Fill product list
   productList.innerHTML = '';
-  order.products.forEach((product) => {
-    const li = document.createElement('li');
-    li.className = 'product-item';
-    li.innerHTML = `
-      <div class="product-info">
-        <div class="product-name">${escapeHtml(product.name)}</div>
-        <div class="product-sku">SKU: ${escapeHtml(product.sku)}</div>
-      </div>
-      <div class="product-quantity">
-        <div class="product-quantity-label">Số lượng</div>
-        <div class="product-quantity-value">${product.quantity}</div>
-      </div>
-    `;
-    productList.appendChild(li);
-  });
+
+  if (Array.isArray(order.products)) {
+    order.products.forEach((product) => {
+      const li = document.createElement('li');
+      li.className = 'product-item';
+      li.innerHTML = `
+        <div class="product-info">
+          <div class="product-name">${escapeHtml(product.name)}</div>
+          <div class="product-sku">SKU: ${escapeHtml(product.sku)}</div>
+        </div>
+        <div class="product-quantity">
+          <div class="product-quantity-label">Số lượng</div>
+          <div class="product-quantity-value">${product.quantity}</div>
+        </div>
+      `;
+      productList.appendChild(li);
+    });
+  }
 
   orderSummary.style.display = 'block';
 }
@@ -390,7 +441,7 @@ function handleRatingClick(e) {
   btn.classList.add('selected');
 
   // Store rating value
-  if (fieldName.includes('_')) {
+  if (fieldName.includes('_') && !fieldName.startsWith('rating_')) {
     // Product rating
     productRatings[fieldName] = parseInt(value);
   } else {
@@ -438,7 +489,7 @@ async function handleSubmitFeedback(e) {
   // Check rate limit
   const rateLimitResult = checkRateLimit(orderCode);
   if (!rateLimitResult.allowed) {
-    showStatusMessage(
+    showSubmitStatus(
       `⏱️ Vui lòng chờ ${rateLimitResult.remainingSeconds} giây trước khi gửi lại`,
       'error'
     );
@@ -455,7 +506,7 @@ async function handleSubmitFeedback(e) {
 
   const validation = validateFeedbackData(feedbackData);
   if (!validation.valid) {
-    showStatusMessage(validation.errors.join('<br>'), 'error');
+    showSubmitStatus(validation.errors.join('<br>'), 'error');
     return;
   }
 
@@ -471,7 +522,7 @@ async function handleSubmitFeedback(e) {
 
   // Submit
   submitBtn.disabled = true;
-  showStatusMessage('<span class="loader"></span> Đang gửi phản hồi...', 'loading');
+  showSubmitStatus('<span class="loader"></span> Đang gửi phản hồi...', 'loading');
 
   try {
     const submitUrl = getN8nEndpoint('N8N_FEEDBACK_SUBMIT_URL');
@@ -489,7 +540,7 @@ async function handleSubmitFeedback(e) {
     }
 
     if (response.success) {
-      showStatusMessage('✓ Cảm ơn! Phản hồi của bạn đã được gửi thành công.', 'success');
+      showSubmitStatus('✓ Cảm ơn! Phản hồi của bạn đã được gửi thành công.', 'success');
       // Reset form after delay
       setTimeout(() => {
         document.getElementById('feedbackForm').reset();
@@ -499,14 +550,14 @@ async function handleSubmitFeedback(e) {
         updateUIAfterReset();
       }, 1000);
     } else {
-      showStatusMessage(
+      showSubmitStatus(
         `❌ Lỗi: ${response.message || 'Không thể gửi phản hồi'}`,
         'error'
       );
     }
   } catch (error) {
     console.error('Error submitting feedback:', error);
-    showStatusMessage('⚠️ Lỗi kết nối. Vui lòng thử lại sau.', 'error');
+    showSubmitStatus('⚠️ Lỗi kết nối. Vui lòng thử lại sau.', 'error');
   } finally {
     submitBtn.disabled = false;
   }
@@ -581,12 +632,25 @@ function mockSubmitFeedback(payload) {
 }
 
 /**
- * Show status message
+ * Show status message (for order search)
  */
 function showStatusMessage(message, type) {
   const statusDiv = document.getElementById('statusMessage');
   statusDiv.innerHTML = message;
   statusDiv.className = `status-message status-${type}`;
+}
+
+/**
+ * Show submit status message (near submit button)
+ */
+function showSubmitStatus(message, type) {
+  const statusDiv = document.getElementById('submitStatusMessage');
+  if (statusDiv) {
+    statusDiv.innerHTML = `<div class="status-message status-${type}">${message}</div>`;
+  } else {
+    // Fallback to top message
+    showStatusMessage(message, type);
+  }
 }
 
 /**

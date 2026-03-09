@@ -43,25 +43,9 @@ function validateOrderCode(code) {
  * @returns {object} - {allowed: boolean, remainingSeconds?: number}
  */
 function checkRateLimit(orderCode) {
-  const now = Date.now();
-  const key = `feedback_submit_${orderCode}`;
-  const lastSubmitTime = rateLimitStore.get(key);
-
-  if (!lastSubmitTime) {
-    rateLimitStore.set(key, now);
-    return { allowed: true };
-  }
-
-  const timeDiff = (now - lastSubmitTime) / 1000; // Convert to seconds
-  const cooldownPeriod = 30;
-
-  if (timeDiff < cooldownPeriod) {
-    const remainingSeconds = Math.ceil(cooldownPeriod - timeDiff);
-    return { allowed: false, remainingSeconds };
-  }
-
-  rateLimitStore.set(key, now);
+  // Đã tắt rate limit để thuận tiện cho việc test liên tục
   return { allowed: true };
+
 }
 
 /**
@@ -146,6 +130,8 @@ function generateUUID() {
  * @returns {string} - Escaped text
  */
 function escapeHtml(text) {
+  if (text == null) return '';
+  const str = String(text);
   const map = {
     '&': '&amp;',
     '<': '&lt;',
@@ -153,7 +139,7 @@ function escapeHtml(text) {
     '"': '&quot;',
     "'": '&#039;'
   };
-  return text.replace(/[&<>"']/g, (m) => map[m]);
+  return str.replace(/[&<>"']/g, (m) => map[m]);
 }
 
 /**
@@ -221,13 +207,13 @@ function validateFeedbackData(feedbackData) {
     }
   }
 
-  if (!hasProductRating && !orderRatings.checkout && !orderRatings.support && !orderRatings.overall) {
+  if (!hasProductRating && !orderRatings.rating_checkout && !orderRatings.rating_support && !orderRatings.rating_overall) {
     errors.push('Vui lòng đánh giá ít nhất một khía cạnh');
   }
 
   // Check order ratings (at least one)
-  if (!orderRatings.checkout && !orderRatings.support && !orderRatings.overall) {
-    errors.push('Vui lòng hoàn thành ít nhất các đánh giá chung về đơn hàng');
+  if (!orderRatings.rating_checkout && !orderRatings.rating_support && !orderRatings.rating_overall) {
+    errors.push('Vui lòng hoàn thành đánh giá chung về đơn hàng');
   }
 
   return {

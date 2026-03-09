@@ -137,6 +137,7 @@
         opacity: 0;
         transform: translateY(-10px);
       }
+
       to {
         opacity: 1;
         transform: translateY(0);
@@ -514,13 +515,8 @@
     <div class="order-lookup-section">
       <h2>Tìm đơn hàng của bạn</h2>
       <div class="order-input-group">
-        <input 
-          type="text" 
-          id="orderCodeInput" 
-          placeholder="Nhập mã đơn hàng (ví dụ: ORD-2024-001)"
-          maxlength="64"
-          aria-label="Mã đơn hàng"
-        >
+        <input type="text" id="orderCodeInput" placeholder="Nhập mã đơn hàng (ví dụ: ORD-2024-001)" maxlength="64"
+          aria-label="Mã đơn hàng">
         <button class="btn-search" id="searchBtn" onclick="handleSearchOrder()">
           Tìm đơn
         </button>
@@ -618,18 +614,16 @@
             <!-- Order Comment -->
             <div class="comment-group">
               <label for="orderComment">Ghi chú tổng quan (tùy chọn)</label>
-              <textarea 
-                id="orderComment" 
-                maxlength="1000"
-                placeholder="Chia sẻ những ghi chú hoặc đề nghị của bạn..."
-              ></textarea>
+              <textarea id="orderComment" maxlength="1000"
+                placeholder="Chia sẻ những ghi chú hoặc đề nghị của bạn..."></textarea>
               <div class="comment-counter">
                 <span id="orderCommentCount">0</span>/1000
               </div>
             </div>
           </div>
 
-          <!-- Form Actions -->
+          <!-- Form Actions & Status Message -->
+          <div id="submitStatusMessage" style="margin-top: 15px; text-align: center;"></div>
           <div class="form-actions">
             <button type="submit" class="btn-submit" id="submitBtn">Gửi phản hồi</button>
             <button type="reset" class="btn-reset" id="resetBtn">Xóa</button>
