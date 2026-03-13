@@ -337,6 +337,94 @@ window.closeTopBanner = function () {
     }
 };
 
+function initSalesVideos() {
+    const videos = document.querySelectorAll('.sales-autoplay-video');
+    if (!videos.length) return;
+
+    const playVideo = (video) => {
+        video.currentTime = 0;
+        video.muted = true;
+        const playPromise = video.play();
+        if (playPromise && typeof playPromise.catch === 'function') {
+            playPromise.catch(() => {
+                // Keep graceful fallback if browser blocks autoplay.
+                video.setAttribute('controls', 'controls');
+            });
+        }
+    };
+
+    const playActiveVideo = (activeIndex = 0) => {
+        videos.forEach((video, idx) => {
+            if (idx === activeIndex) {
+                if (video.readyState >= 2) {
+                    playVideo(video);
+                } else {
+                    video.addEventListener('canplay', () => playVideo(video), { once: true });
+                }
+            } else {
+                video.pause();
+                video.currentTime = 0;
+            }
+        });
+    };
+
+    playActiveVideo(0);
+
+    document.addEventListener('visibilitychange', () => {
+        if (document.hidden) return;
+        const activeSlide = document.querySelector('.sales-video-swiper .swiper-slide-active');
+        const activeVideo = activeSlide ? activeSlide.querySelector('.sales-autoplay-video') : videos[0];
+        const activeIndex = Array.from(videos).indexOf(activeVideo);
+        playActiveVideo(activeIndex >= 0 ? activeIndex : 0);
+    });
+
+    return { playActiveVideo };
+}
+
+function initSalesVideoSwiper(videoController) {
+    const swiperEl = document.querySelector('.sales-video-swiper');
+    if (!swiperEl || typeof Swiper === 'undefined') return;
+
+    const swiper = new Swiper('.sales-video-swiper', {
+        loop: false,
+        speed: 650,
+        navigation: {
+            nextEl: '.sales-video-next',
+            prevEl: '.sales-video-prev'
+        },
+        pagination: {
+            el: '.sales-video-pagination',
+            clickable: true
+        }
+    });
+
+    const bindEndedForActiveVideo = () => {
+        const activeVideo = swiper.slides[swiper.activeIndex]?.querySelector('.sales-autoplay-video');
+        if (!activeVideo) return;
+
+        activeVideo.onended = () => {
+            const isLastSlide = swiper.activeIndex >= swiper.slides.length - 1;
+            if (isLastSlide) {
+                swiper.slideTo(0);
+            } else {
+                swiper.slideNext();
+            }
+        };
+    };
+
+    if (videoController && typeof videoController.playActiveVideo === 'function') {
+        videoController.playActiveVideo(swiper.activeIndex);
+    }
+    bindEndedForActiveVideo();
+
+    swiper.on('slideChangeTransitionEnd', () => {
+        if (videoController && typeof videoController.playActiveVideo === 'function') {
+            videoController.playActiveVideo(swiper.activeIndex);
+        }
+        bindEndedForActiveVideo();
+    });
+}
+
 // --- PRODUCT FILTER LOGIC ---
 function initProductFilter() {
     const desktopCategory = document.getElementById('category-filter-desktop');
@@ -426,4 +514,8 @@ document.addEventListener('DOMContentLoaded', () => {
             }
         });
     }
+
+    // 5. Khoi tao video sales page
+    const videoController = initSalesVideos();
+    initSalesVideoSwiper(videoController);
 });
