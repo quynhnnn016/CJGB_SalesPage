@@ -921,3 +921,217 @@ h6 {
     display: none;
   }
 }
+
+/* Sales page videos */
+.sales-video-section {
+  background: linear-gradient(180deg, #fffef8 0%, #fff9e8 100%);
+}
+
+.sales-video-swiper {
+  position: relative;
+  border-radius: 14px;
+  overflow: hidden;
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.14);
+  background: #000;
+  max-width: 920px;
+  margin: 0 auto;
+}
+
+.sales-video-card {
+  background: #000;
+}
+
+.sales-video-card video {
+  width: 100%;
+  height: 100%;
+  aspect-ratio: 16 / 9;
+  object-fit: cover;
+  display: block;
+}
+
+.sales-video-swiper .sales-video-prev,
+.sales-video-swiper .sales-video-next {
+  color: #fff;
+  background: rgba(0, 0, 0, 0.35);
+  width: 40px;
+  height: 40px;
+  border-radius: 999px;
+  opacity: 0;
+  transition: opacity 0.2s ease;
+}
+
+.sales-video-swiper:hover .sales-video-prev,
+.sales-video-swiper:hover .sales-video-next {
+  opacity: 1;
+}
+
+.sales-video-swiper .sales-video-prev::after,
+.sales-video-swiper .sales-video-next::after {
+  font-size: 14px;
+  font-weight: 800;
+}
+
+.sales-video-swiper .sales-video-pagination .swiper-pagination-bullet {
+  background: rgba(255, 255, 255, 0.65);
+}
+
+.sales-video-swiper .sales-video-pagination .swiper-pagination-bullet-active {
+  background: #f7be04;
+}
+
+@media screen and (max-width: 576px) {
+  .sales-video-swiper .sales-video-prev,
+  .sales-video-swiper .sales-video-next {
+    display: none;
+  }
+}
+
+@media screen and (max-width: 992px) {
+  .sales-video-swiper {
+    max-width: 100%;
+  }
+}
+
+/* CJGB Chatbot */
+.cjgb-chatbot {
+  position: fixed;
+  right: 18px;
+  bottom: 18px;
+  z-index: 1200;
+  font-family: "Open Sans", sans-serif;
+}
+
+.cjgb-chat-toggle {
+  width: 58px;
+  height: 58px;
+  border: 0;
+  border-radius: 999px;
+  background: linear-gradient(135deg, #f7be04 0%, #f59f00 100%);
+  color: #1c1c1c;
+  font-weight: 800;
+  box-shadow: 0 10px 24px rgba(0, 0, 0, 0.2);
+}
+
+.cjgb-chat-panel {
+  width: min(360px, calc(100vw - 24px));
+  height: 500px;
+  background: #ffffff;
+  border: 1px solid #f0dba6;
+  border-radius: 16px;
+  box-shadow: 0 22px 44px rgba(17, 24, 39, 0.18);
+  overflow: hidden;
+  display: none;
+  flex-direction: column;
+  margin-bottom: 12px;
+}
+
+.cjgb-chatbot.is-open .cjgb-chat-panel {
+  display: flex;
+}
+
+.cjgb-chat-header {
+  background: linear-gradient(135deg, #f7be04 0%, #f59f00 100%);
+  color: #1b1b1b;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.cjgb-chat-title {
+  font-weight: 800;
+  font-size: 14px;
+}
+
+.cjgb-chat-close {
+  border: 0;
+  background: rgba(255, 255, 255, 0.45);
+  color: #222;
+  width: 26px;
+  height: 26px;
+  border-radius: 999px;
+  font-weight: 800;
+}
+
+.cjgb-chat-quick {
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+  padding: 10px 10px 0;
+}
+
+.cjgb-chat-quick button {
+  border: 1px solid #efd79f;
+  background: #fff8e8;
+  border-radius: 999px;
+  padding: 6px 10px;
+  font-size: 12px;
+  font-weight: 700;
+  color: #6a4a00;
+}
+
+.cjgb-chat-messages {
+  flex: 1;
+  overflow-y: auto;
+  padding: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+
+.cjgb-chat-message {
+  max-width: 86%;
+  padding: 8px 10px;
+  border-radius: 10px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  font-size: 13px;
+}
+
+.cjgb-chat-message.is-bot {
+  background: #f7f8fa;
+  color: #24262a;
+  align-self: flex-start;
+}
+
+.cjgb-chat-message.is-user {
+  background: #fff2c7;
+  color: #272727;
+  align-self: flex-end;
+}
+
+.cjgb-chat-form {
+  border-top: 1px solid #f1e4bf;
+  padding: 10px;
+  display: flex;
+  gap: 8px;
+}
+
+.cjgb-chat-input {
+  flex: 1;
+  border: 1px solid #e8d59f;
+  border-radius: 10px;
+  padding: 8px 10px;
+  font-size: 13px;
+}
+
+.cjgb-chat-send {
+  border: 0;
+  border-radius: 10px;
+  background: #1f2937;
+  color: #fff;
+  padding: 8px 12px;
+  font-size: 13px;
+  font-weight: 700;
+}
+
+@media screen and (max-width: 576px) {
+  .cjgb-chatbot {
+    right: 10px;
+    bottom: 10px;
+  }
+
+  .cjgb-chat-panel {
+    height: 72vh;
+  }
+}
